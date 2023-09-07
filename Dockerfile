@@ -1,7 +1,21 @@
-FROM openjdk:1.8
+FROM maven:3.8.5-openjdk-8 AS maven_build
 
-ARG JAR_FILE=target/*.jar
+COPY pom.xml /tmp/
 
-COPY ${JAR_FILE} app.jar
+COPY src /tmp/src/
 
-ENTRYPOINT ["java","-jar","/app.jar"]
+WORKDIR /tmp/
+
+RUN mvn package
+
+#pull base image
+
+FROM eclipse-temurin:11
+
+#expose port 8080
+EXPOSE 8080
+
+#default command
+CMD java -jar /data/springbootproject-0.0.1-SNAPSHOT.jar
+
+COPY --from=maven_build /tmp/target/springbootproject-0.0.1-SNAPSHOT.jar /data/springbootproject-0.0.1-SNAPSHOT.jar
